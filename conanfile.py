@@ -111,6 +111,7 @@ class KtxConan(ConanFile):
         cmake = self._configure_cmake()
         cmake.install()
         tools.rmdir(os.path.join(self.package_folder, "lib", "cmake"))
+        self.copy("lib/astc-encoder/Source/astcenc.h", dst="include", src=self._source_subfolder, keep_path=False)
 
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "Ktx")
