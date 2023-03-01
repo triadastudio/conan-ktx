@@ -5,7 +5,7 @@ import os
 
 class KtxConan(ConanFile):
     name = "ktx"
-    version = "4.1.0-20230301"
+    version = "4.1.0-20230302"
     description = "Khronos Texture library and tool"
     license = "Apache-2.0"
     topics = ("ktx", "texture", "khronos")
@@ -32,6 +32,9 @@ class KtxConan(ConanFile):
 
     def layout(self):
         cmake.cmake_layout(self)
+
+    def export_sources(self):
+        files.export_conandata_patches(self)
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -70,6 +73,7 @@ class KtxConan(ConanFile):
         tc.generate()
 
     def build(self):
+        files.apply_conandata_patches(self)
         cm = cmake.CMake(self)
         cm.configure()
         cm.build()
@@ -87,6 +91,15 @@ class KtxConan(ConanFile):
         files.rmdir(self, os.path.join(self.package_folder, "lib", "cmake"))
 
         self.copy_sources_to_package("astcenc.h", "lib/astc-encoder/Source/", "include")
+
+        # For some reason astcenc lib is not in output lib folder on Macos/iOS, copy manually
+        if self.settings.os in ["Macos", "iOS"]:
+            files.copy(self,
+                       pattern="*/*astcenc*.a",
+                       src=self.build_folder,
+                       dst=os.path.join(self.package_folder, "lib"),
+                       keep_path=False)
+
         self.copy_sources_to_package("LICENSE.md", "", "licenses")
         self.copy_sources_to_package("*", "LICENSES", "licenses")
 
@@ -95,6 +108,8 @@ class KtxConan(ConanFile):
         self.cpp_info.set_property("cmake_target_name", "ktx::ktx")
         self.cpp_info.components["libktx"].names["cmake_find_package"] = "ktx"
         self.cpp_info.components["libktx"].names["cmake_find_package_multi"] = "ktx"
+
+        print(files.collect_libs(self))
         self.cpp_info.components["libktx"].libs = files.collect_libs(self)
 
         self.cpp_info.components["libktx"].defines = [

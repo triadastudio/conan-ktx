@@ -1,3 +1,10 @@
 sources:
-  "4.1.0-20230301":
-    url: "https://github.com/dBagrat/KTX-Software/archive/41970a9deb3a7ecd6675d4d814459b14790b3a0a.tar.gz"
+  "4.1.0-20230302":
+    url: "https://github.com/KhronosGroup/KTX-Software/archive/6596f7f89c02c5a266ac631da876323b1ce8df72.tar.gz"
+    sha256: "6903411c446e93fcbfa76d5e1161de7e574f280469ed37db913db66c77492ab5"
+
+patches:
+  "4.1.0-20230302":
+    - patch_file: "patches/0001-no-ios-framework.patch"
+      patch_description: "Make regular library instead of framework on iOS"
+      patch_type: "conan"

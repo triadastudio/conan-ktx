@@ -1,0 +1,14 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -252,11 +252,6 @@ macro(commom_lib_settings lib write)
+         SOVERSION ${PROJECT_VERSION_MAJOR}
+         XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME "YES"
+     )
+-    if(IOS)
+-        set_target_properties(${lib} PROPERTIES
+-            FRAMEWORK TRUE
+-        )
+-    endif()
+ 
+     set_code_sign(${lib} "NOPPS")
+ 
