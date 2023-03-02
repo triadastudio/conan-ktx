@@ -1,15 +1,10 @@
 sources:
-  "4.0.0":
-    url: "https://github.com/KhronosGroup/KTX-Software/archive/refs/tags/v4.0.0.tar.gz"
-    sha256: "6091f5064d0cfd54c6155bb6c0d2ba7287f312d109010e9b702839ac78529fd3"
-  "4.0.0-20211125":
-    url: "https://github.com/KhronosGroup/KTX-Software/archive/a7159924a6095488d8fb1ded358113d85813f669.tar.gz"
-    sha256: "ea2d59b04d8b1bb126a7720efadbd3ffa766853369c0439ca2c7891fa3538859"
+  "4.1.0-20230302":
+    url: "https://github.com/KhronosGroup/KTX-Software/archive/6596f7f89c02c5a266ac631da876323b1ce8df72.tar.gz"
+    sha256: "6903411c446e93fcbfa76d5e1161de7e574f280469ed37db913db66c77492ab5"
+
 patches:
-  "4.0.0":
-    - patch_file: "patches/0001-objutil-cxx-std.patch"
-      base_path: "source_subfolder"
-    - patch_file: "patches/0002-lodepng-no-export-symbols.patch"
-      base_path: "source_subfolder"
-    - patch_file: "patches/0003-clamp-include-algorithm.patch"
-      base_path: "source_subfolder"
+  "4.1.0-20230302":
+    - patch_file: "patches/0001-no-ios-framework.patch"
+      patch_description: "Make regular library instead of framework on iOS"
+      patch_type: "conan"

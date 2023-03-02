@@ -8,7 +8,7 @@ on:
 
 jobs:
   windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
     - name: Set git to use LF
       run: |
@@ -21,19 +21,18 @@ jobs:
       run: pip install conan
     - name: Config
       env:
-        CONAN_LOGIN_USERNAME: ${{ secrets.JFROG_USER }}
         CONAN_PASSWORD: ${{ secrets.JFROG_APIKEY }}
       run: |
         conan remote add triada https://triada.jfrog.io/artifactory/api/conan/conan
-        conan user -r triada -p --skip-auth
+        conan remote login triada ${{ secrets.JFROG_USER }}
     - name: Build
       run: |
-        conan create . -b missing --profile profiles/windows.profile -s build_type=Debug
-        conan create . -b missing --profile profiles/windows.profile -s build_type=Release
-        conan create . -b missing --profile profiles/windows.profile -s build_type=RelWithDebInfo
-        conan create . -b missing --profile profiles/windows.profile -s build_type=MinSizeRel
+        conan create . -pr:h profiles/windows.profile -pr:b profiles/windows.profile -b missing -s build_type=Debug
+        conan create . -pr:h profiles/windows.profile -pr:b profiles/windows.profile -b missing -s build_type=Release
+        conan create . -pr:h profiles/windows.profile -pr:b profiles/windows.profile -b missing -s build_type=RelWithDebInfo
+        conan create . -pr:h profiles/windows.profile -pr:b profiles/windows.profile -b missing -s build_type=MinSizeRel
     - name: Upload
-      run: conan upload "ktx" -r triada --all -c
+      run: conan upload "ktx" -r triada -c
 
   linux:
     runs-on: ubuntu-22.04
@@ -46,20 +45,18 @@ jobs:
         sudo pip install conan
     - name: Config
       env:
-        CONAN_LOGIN_USERNAME: ${{ secrets.JFROG_USER }}
         CONAN_PASSWORD: ${{ secrets.JFROG_APIKEY }}
       run: |
         conan remote add triada https://triada.jfrog.io/artifactory/api/conan/conan
-        conan user -r triada -p --skip-auth
+        conan remote login triada ${{ secrets.JFROG_USER }}
     - name: Build
       run: |
-        conan create . -b missing --profile profiles/linux.profile -s build_type=Debug
-        conan create . -b missing --profile profiles/linux.profile -s build_type=Release
-        conan create . -b missing --profile profiles/linux.profile -s build_type=RelWithDebInfo
-        conan create . -b missing --profile profiles/linux.profile -s build_type=MinSizeRel
+        conan create . -pr:h profiles/linux.profile -pr:b profiles/linux.profile -b missing -s build_type=Debug
+        conan create . -pr:h profiles/linux.profile -pr:b profiles/linux.profile -b missing -s build_type=Release
+        conan create . -pr:h profiles/linux.profile -pr:b profiles/linux.profile -b missing -s build_type=RelWithDebInfo
+        conan create . -pr:h profiles/linux.profile -pr:b profiles/linux.profile -b missing -s build_type=MinSizeRel
     - name: Upload
-      run: conan upload "ktx" -r triada --all -c
-
+      run: conan upload "ktx" -r triada -c
   macos:
     runs-on: macos-11
     steps:
@@ -70,19 +67,18 @@ jobs:
       run: pip3 install conan
     - name: Config
       env:
-        CONAN_LOGIN_USERNAME: ${{ secrets.JFROG_USER }}
         CONAN_PASSWORD: ${{ secrets.JFROG_APIKEY }}
       run: |
         conan remote add triada https://triada.jfrog.io/artifactory/api/conan/conan
-        conan user -r triada -p --skip-auth
+        conan remote login triada ${{ secrets.JFROG_USER }}
     - name: Build
       run: |
-        conan create . -b missing --profile profiles/macos.profile -s build_type=Debug
-        conan create . -b missing --profile profiles/macos.profile -s build_type=Release
-        conan create . -b missing --profile profiles/macos.profile -s build_type=RelWithDebInfo
-        conan create . -b missing --profile profiles/macos.profile -s build_type=MinSizeRel
+        conan create . -pr:h profiles/macos.profile -pr:b profiles/macos.profile -b missing -s build_type=Debug
+        conan create . -pr:h profiles/macos.profile -pr:b profiles/macos.profile -b missing -s build_type=Release
+        conan create . -pr:h profiles/macos.profile -pr:b profiles/macos.profile -b missing -s build_type=RelWithDebInfo
+        conan create . -pr:h profiles/macos.profile -pr:b profiles/macos.profile -b missing -s build_type=MinSizeRel
     - name: Upload
-      run: conan upload "ktx" -r triada --all -c
+      run: conan upload "ktx" -r triada -c
 
   ios:
     runs-on: macos-11
@@ -94,16 +90,16 @@ jobs:
       run: pip3 install conan
     - name: Config
       env:
-        CONAN_LOGIN_USERNAME: ${{ secrets.JFROG_USER }}
         CONAN_PASSWORD: ${{ secrets.JFROG_APIKEY }}
       run: |
         conan remote add triada https://triada.jfrog.io/artifactory/api/conan/conan
-        conan user -r triada -p --skip-auth
+        conan remote login triada ${{ secrets.JFROG_USER }}
     - name: Build
       run: |
-        conan create . -b missing --profile profiles/ios.profile -s build_type=Debug --test-folder=None
-        conan create . -b missing --profile profiles/ios.profile -s build_type=Release --test-folder=None
-        conan create . -b missing --profile profiles/ios.profile -s build_type=RelWithDebInfo --test-folder=None
-        conan create . -b missing --profile profiles/ios.profile -s build_type=MinSizeRel --test-folder=None
+
+        conan create . -pr:h profiles/ios.profile -pr:b profiles/macos.profile -b missing -s build_type=Debug -tf ""
+        conan create . -pr:h profiles/ios.profile -pr:b profiles/macos.profile -b missing -s build_type=Release -tf ""
+        conan create . -pr:h profiles/ios.profile -pr:b profiles/macos.profile -b missing -s build_type=RelWithDebInfo -tf ""
+        conan create . -pr:h profiles/ios.profile -pr:b profiles/macos.profile -b missing -s build_type=MinSizeRel -tf ""
     - name: Upload
-      run: conan upload "ktx" -r triada --all -c
+      run: conan upload "ktx" -r triada -c
