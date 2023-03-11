@@ -21,10 +21,10 @@ jobs:
       run: pip install conan
     - name: Config
       env:
-        CONAN_PASSWORD: ${{ secrets.JFROG_APIKEY }}
+        CONAN_PASSWORD: ${{ secrets.ARTIFACTORY_APIKEY }}
       run: |
-        conan remote add triada https://triada.jfrog.io/artifactory/api/conan/conan
-        conan remote login triada ${{ secrets.JFROG_USER }}
+        conan remote add triada ${{ secrets.ARTIFACTORY_URL }}
+        conan remote login triada ${{ secrets.ARTIFACTORY_USER }}
     - name: Build
       run: |
         conan create . -pr:h profiles/windows.profile -pr:b profiles/windows.profile -b missing -s build_type=Debug
@@ -45,10 +45,10 @@ jobs:
         sudo pip install conan
     - name: Config
       env:
-        CONAN_PASSWORD: ${{ secrets.JFROG_APIKEY }}
+        CONAN_PASSWORD: ${{ secrets.ARTIFACTORY_APIKEY }}
       run: |
-        conan remote add triada https://triada.jfrog.io/artifactory/api/conan/conan
-        conan remote login triada ${{ secrets.JFROG_USER }}
+        conan remote add triada ${{ secrets.ARTIFACTORY_URL }}
+        conan remote login triada ${{ secrets.ARTIFACTORY_USER }}
     - name: Build
       run: |
         conan create . -pr:h profiles/linux.profile -pr:b profiles/linux.profile -b missing -s build_type=Debug
@@ -58,7 +58,7 @@ jobs:
     - name: Upload
       run: conan upload "ktx" -r triada -c
   macos:
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
     - uses: actions/checkout@v2
       with:
@@ -67,10 +67,10 @@ jobs:
       run: pip3 install conan
     - name: Config
       env:
-        CONAN_PASSWORD: ${{ secrets.JFROG_APIKEY }}
+        CONAN_PASSWORD: ${{ secrets.ARTIFACTORY_APIKEY }}
       run: |
-        conan remote add triada https://triada.jfrog.io/artifactory/api/conan/conan
-        conan remote login triada ${{ secrets.JFROG_USER }}
+        conan remote add triada ${{ secrets.ARTIFACTORY_URL }}
+        conan remote login triada ${{ secrets.ARTIFACTORY_USER }}
     - name: Build
       run: |
         conan create . -pr:h profiles/macos.profile -pr:b profiles/macos.profile -b missing -s build_type=Debug
@@ -81,7 +81,7 @@ jobs:
       run: conan upload "ktx" -r triada -c
 
   ios:
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
     - uses: actions/checkout@v2
       with:
@@ -90,10 +90,10 @@ jobs:
       run: pip3 install conan
     - name: Config
       env:
-        CONAN_PASSWORD: ${{ secrets.JFROG_APIKEY }}
+        CONAN_PASSWORD: ${{ secrets.ARTIFACTORY_APIKEY }}
       run: |
-        conan remote add triada https://triada.jfrog.io/artifactory/api/conan/conan
-        conan remote login triada ${{ secrets.JFROG_USER }}
+        conan remote add triada ${{ secrets.ARTIFACTORY_URL }}
+        conan remote login triada ${{ secrets.ARTIFACTORY_USER }}
     - name: Build
       run: |
 
