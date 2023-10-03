@@ -2,6 +2,10 @@ sources:
   "4.1.0-20230302":
     url: "https://github.com/KhronosGroup/KTX-Software/archive/6596f7f89c02c5a266ac631da876323b1ce8df72.tar.gz"
     sha256: "6903411c446e93fcbfa76d5e1161de7e574f280469ed37db913db66c77492ab5"
+  "4.2.1":
+    url: "https://github.com/KhronosGroup/KTX-Software/archive/v4.2.1.tar.gz"
+    sha256: "a493bf482ff78404b1a3a242c3cc5002d8b980b164bd2e79195f7b633cee50b4"
+
 
 patches:
   "4.1.0-20230302":

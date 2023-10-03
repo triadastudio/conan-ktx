@@ -5,7 +5,7 @@ import os
 
 class KtxConan(ConanFile):
     name = "ktx"
-    version = "4.1.0-20230302"
+    version = "4.2.1"
     description = "Khronos Texture library and tool"
     license = "Apache-2.0"
     topics = ("ktx", "texture", "khronos")
@@ -23,7 +23,7 @@ class KtxConan(ConanFile):
         "shared": False,
         "fPIC": True,
         "sse": True,
-        "tools": True,
+        "tools": False,
     }
 
     @property
@@ -70,6 +70,14 @@ class KtxConan(ConanFile):
         tc.variables["KTX_FEATURE_STATIC_LIBRARY"] = not self.options.shared
         tc.variables["KTX_FEATURE_TESTS"] = False
         tc.variables["BASISU_SUPPORT_SSE"] = self.options.get_safe("sse", False)
+
+        # Suppress warnings
+        if self.settings.compiler == "msvc":
+            tc.variables["CMAKE_CXX_FLAGS"] = "/wd5054 /wd4459 /EHsc"
+        else:
+            # tc.variables["CMAKE_C_FLAGS"] = "-Wno-unused-variable"
+            tc.variables["CMAKE_CXX_FLAGS"] = "-Wno-deprecated-enum-enum-conversion"
+
         tc.generate()
 
     def build(self):
