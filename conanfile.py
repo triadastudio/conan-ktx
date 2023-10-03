@@ -101,6 +101,9 @@ class KtxConan(ConanFile):
                        dst=os.path.join(self.package_folder, "lib"),
                        keep_path=False)
 
+        if self.settings.os == "iOS":
+            self.copy_sources_to_package("*", "include/KHR", "include/KHR")
+
         self.copy_sources_to_package("LICENSE.md", "", "licenses")
         self.copy_sources_to_package("*", "LICENSES", "licenses")
 
