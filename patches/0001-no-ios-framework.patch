@@ -1,14 +1,14 @@
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -252,11 +252,6 @@ macro(commom_lib_settings lib write)
+@@ -445,11 +445,6 @@ macro(common_libktx_settings target enable_write library_type)
          SOVERSION ${PROJECT_VERSION_MAJOR}
          XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME "YES"
      )
 -    if(IOS)
--        set_target_properties(${lib} PROPERTIES
+-        set_target_properties(${target} PROPERTIES
 -            FRAMEWORK TRUE
 -        )
 -    endif()
  
-     set_code_sign(${lib} "NOPPS")
- 
+     if( NOT ${library_type} STREQUAL STATIC )
+         # Must not call this macro for static libs on Windows. To keep

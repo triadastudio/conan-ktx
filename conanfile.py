@@ -5,7 +5,7 @@ import os
 
 class KtxConan(ConanFile):
     name = "ktx"
-    version = "4.1.0-20230302"
+    version = "4.3.0-alpha3-20230922"
     description = "Khronos Texture library and tool"
     license = "Apache-2.0"
     topics = ("ktx", "texture", "khronos")
@@ -70,6 +70,7 @@ class KtxConan(ConanFile):
         tc.variables["KTX_FEATURE_STATIC_LIBRARY"] = not self.options.shared
         tc.variables["KTX_FEATURE_TESTS"] = False
         tc.variables["BASISU_SUPPORT_SSE"] = self.options.get_safe("sse", False)
+
         tc.generate()
 
     def build(self):
@@ -99,6 +100,9 @@ class KtxConan(ConanFile):
                        src=self.build_folder,
                        dst=os.path.join(self.package_folder, "lib"),
                        keep_path=False)
+
+        if self.settings.os == "iOS":
+            self.copy_sources_to_package("*", "include/KHR", "include/KHR")
 
         self.copy_sources_to_package("LICENSE.md", "", "licenses")
         self.copy_sources_to_package("*", "LICENSES", "licenses")
