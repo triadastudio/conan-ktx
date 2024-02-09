@@ -1,14 +1,16 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ccf4af61..9c1e1cce 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -445,11 +445,6 @@ macro(common_libktx_settings target enable_write library_type)
-         SOVERSION ${PROJECT_VERSION_MAJOR}
-         XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME "YES"
+@@ -484,11 +484,6 @@ macro(common_libktx_settings target enable_write library_type)
+         CXX_STANDARD_REQUIRED YES
+ 
      )
 -    if(IOS)
 -        set_target_properties(${target} PROPERTIES
 -            FRAMEWORK TRUE
 -        )
 -    endif()
- 
+
      if( NOT ${library_type} STREQUAL STATIC )
          # Must not call this macro for static libs on Windows. To keep
