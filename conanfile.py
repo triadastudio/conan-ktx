@@ -5,7 +5,7 @@ import os
 
 class KtxConan(ConanFile):
     name = "ktx"
-    version = "4.3.0-alpha3-20230922"
+    version = "4.3.1"
     description = "Khronos Texture library and tool"
     license = "Apache-2.0"
     topics = ("ktx", "texture", "khronos")
@@ -51,7 +51,7 @@ class KtxConan(ConanFile):
 
     def requirements(self):
         self.requires("lodepng/cci.20200615")
-        self.requires("zstd/1.5.0")
+        self.requires("zstd/1.5.5")
 
     def validate(self):
         if self.settings.compiler.get_safe("cppstd"):
