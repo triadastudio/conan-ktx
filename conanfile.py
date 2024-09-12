@@ -5,7 +5,7 @@ import os
 
 class KtxConan(ConanFile):
     name = "ktx"
-    version = "4.3.1"
+    version = "4.3.2b"
     description = "Khronos Texture library and tool"
     license = "Apache-2.0"
     topics = ("ktx", "texture", "khronos")

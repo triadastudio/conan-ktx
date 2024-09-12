@@ -1,2 +1,4 @@
 build
 build.*
+
+test_package/CMakeUserPresets.json
