@@ -1,9 +1,0 @@
-{
-    "version": 4,
-    "vendor": {
-        "conan": {}
-    },
-    "include": [
-        "build/apple-clang-15-armv8-20-release/generators/CMakePresets.json"
-    ]
-}
