@@ -2,9 +2,22 @@ sources:
   "4.3.1":
     url: "https://github.com/KhronosGroup/KTX-Software/archive/v4.3.1.tar.gz"
     sha256: "98f051c91e723f85f3a5136a75dfa0ee186d72cc93223fd0daa1b3c8077ccb69"
-
+  "4.3.2b":
+    url: "https://github.com/KhronosGroup/KTX-Software/archive/refs/tags/v4.3.2.tar.gz"
+    sha256: "74a114f465442832152e955a2094274b446c7b2427c77b1964c85c173a52ea1f"
 patches:
   "4.3.1":
-    - patch_file: "patches/0001-no-ios-framework.patch"
+    - patch_file: "patches/4.3.1/0001-no-ios-framework.patch"
       patch_description: "Make regular library instead of framework on iOS"
       patch_type: "conan"
+  "4.3.2b":
+  - patch_file: "patches/4.3.2b/0001-no-ios-framework.patch"
+    patch_description: "Make regular library instead of framework on iOS"
+    patch_type: "conan"
+  - patch_file: "patches/4.3.2b/0002-disable-constexpr-mutex-constructor.patch"
+    patch_description: "define `_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR` 
+      when compiling libktx and 
+      ${ASTCENC_LIB_TARGET}. This makes the code compatible with older VC 
+      runtimes removing the burden from users to ensure their JVM installation 
+      uses the latest VC runtime."
+    patch_type: "conan"
