@@ -3,6 +3,6 @@ os=Macos
 os.version=13.0
 arch=x86_64
 compiler=apple-clang
-compiler.version=14
+compiler.version=13
 compiler.libcxx=libc++
 compiler.cppstd=17
