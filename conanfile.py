@@ -97,6 +97,10 @@ class KtxConan(ConanFile):
         tc.cache_variables["KTX_FEATURE_LOADTEST_APPS"] = False
         tc.cache_variables["KTX_FEATURE_TESTS"] = False
         tc.cache_variables["BASISU_SUPPORT_SSE"] = bool(self.options.get_safe("sse", False))
+        if self.settings.os == "Macos":
+            tc.cache_variables["CMAKE_OSX_DEPLOYMENT_TARGET"] = "13.0"
+        elif self.settings.os == "iOS":
+            tc.cache_variables["CMAKE_OSX_DEPLOYMENT_TARGET"] = "16.0"
         # By default astc-encoder's default AVX2 ISA is compiled as x86_64h Mach-O slice,
         # which cannot be merged into the x86_64 libktx.a leaving the symbols undefined
         # Force SSE4.1 so astcenc produces a plain x86_64 slice
