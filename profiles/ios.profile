@@ -1,6 +1,6 @@
 [settings]
 os=iOS
-os.version=13.0
+os.version=12.0
 os.sdk=iphoneos
 arch=armv8
 compiler=apple-clang

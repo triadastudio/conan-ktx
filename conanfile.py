@@ -90,11 +90,26 @@ class KtxConan(ConanFile):
 
     def generate(self):
         tc = CMakeToolchain(self)
-        tc.variables["KTX_FEATURE_TOOLS"] = self.options.tools
-        tc.variables["KTX_FEATURE_DOC"] = False
-        tc.variables["KTX_FEATURE_LOADTEST_APPS"] = False
-        tc.variables["KTX_FEATURE_TESTS"] = False
-        tc.variables["BASISU_SUPPORT_SSE"] = self.options.get_safe("sse", False)
+        # KTX declares these options (option()/CMAKE_DEPENDENT_OPTION) before its
+        # project() call, which is where Conan's toolchain file is injected.
+        # Toolchain `variables` therefore arrive too late to override the
+        # already-created cache entries, so they must be passed as
+        # `cache_variables` (-D on the configure line), applied before any
+        # CMakeLists code runs. Otherwise KTX_FEATURE_TESTS stays at its upstream
+        # default (ON) and pulls in a find_package(fmt) that breaks the iOS build,
+        # where tools (and thus fmt) are disabled.
+        tc.cache_variables["KTX_FEATURE_TOOLS"] = bool(self.options.tools)
+        tc.cache_variables["KTX_FEATURE_DOC"] = False
+        tc.cache_variables["KTX_FEATURE_LOADTEST_APPS"] = False
+        tc.cache_variables["KTX_FEATURE_TESTS"] = False
+        tc.cache_variables["BASISU_SUPPORT_SSE"] = bool(self.options.get_safe("sse", False))
+        # On Apple x86_64, astc-encoder's default AVX2 ISA is compiled as the
+        # x86_64h Mach-O slice, which cannot be merged into the x86_64 libktx.a by
+        # KTX's Apple static-lib `libtool -static` step, leaving the astcenc
+        # symbols undefined. Force SSE4.1 so astcenc produces a plain x86_64 slice.
+        if is_apple_os(self) and self.settings.arch == "x86_64":
+            tc.cache_variables["ASTCENC_ISA_AVX2"] = False
+            tc.cache_variables["ASTCENC_ISA_SSE41"] = True
         tc.generate()
         deps = CMakeDeps(self)
         deps.generate()
