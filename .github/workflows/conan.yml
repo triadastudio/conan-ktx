@@ -72,7 +72,7 @@ jobs:
         conan upload "ktx" -r triada -c
 
   macos:
-    runs-on: macos-15
+    runs-on: macos-15-intel
     steps:
     - uses: actions/checkout@v5
       with:
@@ -102,7 +102,7 @@ jobs:
         conan upload "ktx" -r triada -c
 
   macos-armv8:
-    runs-on: macos-15-arm64
+    runs-on: macos-15
     steps:
     - uses: actions/checkout@v5
       with:
@@ -152,10 +152,10 @@ jobs:
     - name: Build
       run: |
         . .venv/bin/activate
-        conan create . -pr:h profiles/ios.profile -pr:b profiles/macos.profile -b missing -s build_type=Debug -tf ""
-        conan create . -pr:h profiles/ios.profile -pr:b profiles/macos.profile -b missing -s build_type=Release -tf ""
-        conan create . -pr:h profiles/ios.profile -pr:b profiles/macos.profile -b missing -s build_type=RelWithDebInfo -tf ""
-        conan create . -pr:h profiles/ios.profile -pr:b profiles/macos.profile -b missing -s build_type=MinSizeRel -tf ""
+        conan create . -pr:h profiles/ios.profile -pr:b profiles/macos-armv8.profile -b missing -s build_type=Debug -tf ""
+        conan create . -pr:h profiles/ios.profile -pr:b profiles/macos-armv8.profile -b missing -s build_type=Release -tf ""
+        conan create . -pr:h profiles/ios.profile -pr:b profiles/macos-armv8.profile -b missing -s build_type=RelWithDebInfo -tf ""
+        conan create . -pr:h profiles/ios.profile -pr:b profiles/macos-armv8.profile -b missing -s build_type=MinSizeRel -tf ""
     - name: Upload
       run: |
         . .venv/bin/activate
