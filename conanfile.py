@@ -90,17 +90,15 @@ class KtxConan(ConanFile):
 
     def generate(self):
         tc = CMakeToolchain(self)
-        # KTX sets vars before project() call in thier cmake
-        # Only way to override them is through  conan's toolchain cache variables
+        # KTX sets vars before project() call in their cmake
+        # Only way to override them is through conan's toolchain cache variables
         tc.cache_variables["KTX_FEATURE_TOOLS"] = bool(self.options.tools)
         tc.cache_variables["KTX_FEATURE_DOC"] = False
         tc.cache_variables["KTX_FEATURE_LOADTEST_APPS"] = False
         tc.cache_variables["KTX_FEATURE_TESTS"] = False
         tc.cache_variables["BASISU_SUPPORT_SSE"] = bool(self.options.get_safe("sse", False))
-        if self.settings.os == "Macos":
-            tc.cache_variables["CMAKE_OSX_DEPLOYMENT_TARGET"] = "13.0"
-        elif self.settings.os == "iOS":
-            tc.cache_variables["CMAKE_OSX_DEPLOYMENT_TARGET"] = "16.0"
+        if is_apple_os(self) and self.settings.get_safe("os.version"):
+            tc.cache_variables["CMAKE_OSX_DEPLOYMENT_TARGET"] = str(self.settings.os.version)
         # By default astc-encoder's default AVX2 ISA is compiled as x86_64h Mach-O slice,
         # which cannot be merged into the x86_64 libktx.a leaving the symbols undefined
         # Force SSE4.1 so astcenc produces a plain x86_64 slice
