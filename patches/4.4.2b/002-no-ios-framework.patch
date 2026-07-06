@@ -1,14 +1,14 @@
 --- CMakeLists.txt	2024-09-11 18:47:01
 +++ CMakeLists.txt	2024-09-11 18:49:46
-@@ -489,11 +489,6 @@
-         CXX_STANDARD_REQUIRED YES
- 
+@@ -548,11 +548,6 @@
+         SOVERSION ${PROJECT_VERSION_MAJOR}
+         XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME "YES"
      )
--    if(IOS)
+-    if(APPLE_LOCKED_OS)
 -        set_target_properties(${target} PROPERTIES
 -            FRAMEWORK TRUE
 -        )
 -    endif()
- 
+
      if( NOT ${library_type} STREQUAL STATIC )
          # Must not call this macro for static libs on Windows. To keep

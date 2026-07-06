@@ -1,17 +1,24 @@
 from conan import ConanFile
-from conan.tools import cmake, build, files
-
+from conan.errors import ConanInvalidConfiguration
+from conan.tools.apple import is_apple_os
+from conan.tools.build import check_min_cppstd, stdcpp_library, cross_building, check_max_cppstd
+from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
+from conan.tools.files import apply_conandata_patches, copy, export_conandata_patches, get, rmdir, save, replace_in_file
+from conan.tools.scm import Version
 import os
+
+required_conan_version = ">=2"
+
 
 class KtxConan(ConanFile):
     name = "ktx"
-    version = "4.3.2b"
+    version = "4.4.2b"
     description = "Khronos Texture library and tool"
     license = "Apache-2.0"
-    topics = ("ktx", "texture", "khronos")
+    topics = ("texture", "khronos")
     homepage = "https://github.com/KhronosGroup/KTX-Software"
     url = "https://github.com/triadastudio/conan-ktx"
-
+    package_type = "library"
     settings = "os", "arch", "compiler", "build_type"
     options = {
         "shared": [True, False],
@@ -30,11 +37,8 @@ class KtxConan(ConanFile):
     def _has_sse_support(self):
         return self.settings.arch in ["x86", "x86_64"]
 
-    def layout(self):
-        cmake.cmake_layout(self)
-
     def export_sources(self):
-        files.export_conandata_patches(self)
+        export_conandata_patches(self)
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -42,93 +46,111 @@ class KtxConan(ConanFile):
         if not self._has_sse_support:
             del self.options.sse
         if self.settings.os in ["iOS", "Android", "Emscripten"]:
-            # tools are not build by default if iOS, Android or Emscripten
+            # tools are not built by default if iOS, Android or Emscripten
             self.options.tools = False
 
     def configure(self):
         if self.options.shared:
-            del self.options.fPIC
+            self.options.rm_safe("fPIC")
+
+    def layout(self):
+        cmake_layout(self, src_folder="src")
 
     def requirements(self):
-        self.requires("lodepng/cci.20200615")
-        self.requires("zstd/1.5.5")
+        self.requires("zstd/[^1.5]")
+        if self.options.tools:
+            self.requires("fmt/[>=12]")
+
+    def validate_build(self):
+        if self.options.tools:
+            if cross_building(self) and is_apple_os(self):
+                raise ConanInvalidConfiguration(f"Cross-building KTX tools {self.version} for Apple OS is not supported in this version")
+            # KTX tools code passes runtime strings to fmt::fstring which is consteval in C++20
+            check_max_cppstd(self, 17)
 
     def validate(self):
-        if self.settings.compiler.get_safe("cppstd"):
-            build.check_min_cppstd(self, 11)
+        check_min_cppstd(self, 17)
+        if self.settings.compiler == "gcc" and Version(self.settings.compiler.version) < 6:
+            # astcenc_vecmathlib_sse_4.h:809:41: error: the last argument must be a 4-bit immediate
+            raise ConanInvalidConfiguration("GCC v6+ is required")
+
+    def package_id(self):
+        self.info.settings.rm_safe("compiler.cppstd")
+
+    def build_requirements(self):
+        self.tool_requires("cmake/[>=3.22]")
 
     def source(self):
-        files.get(self,
-                  **self.conan_data["sources"][self.version],
-                  strip_root=True)
+        get(self, **self.conan_data["sources"][self.version], strip_root=True)
+        rmdir(self, os.path.join(self.source_folder, "tests"))
+        save(self, os.path.join(self.source_folder, "tests", "CMakeLists.txt"), "")
+        replace_in_file(self, os.path.join(self.source_folder, "external", "astc-encoder", "CMakeLists.txt"),
+                        "set(CMAKE_CXX_STANDARD", "#")
+        apply_conandata_patches(self)
 
     def generate(self):
-        tc = cmake.CMakeToolchain(self)
-        tc.variables["KTX_FEATURE_TOOLS"] = self.options.tools
-        tc.variables["KTX_FEATURE_DOC"] = False
-        tc.variables["KTX_FEATURE_LOADTEST_APPS"] = False
-        tc.variables["KTX_FEATURE_STATIC_LIBRARY"] = not self.options.shared
-        tc.variables["KTX_FEATURE_TESTS"] = False
-        tc.variables["BASISU_SUPPORT_SSE"] = self.options.get_safe("sse", False)
-
+        tc = CMakeToolchain(self)
+        # KTX sets vars before project() call in their cmake
+        # Only way to override them is through conan's toolchain cache variables
+        tc.cache_variables["KTX_FEATURE_TOOLS"] = bool(self.options.tools)
+        tc.cache_variables["KTX_FEATURE_DOC"] = False
+        tc.cache_variables["KTX_FEATURE_LOADTEST_APPS"] = False
+        tc.cache_variables["KTX_FEATURE_TESTS"] = False
+        tc.cache_variables["BASISU_SUPPORT_SSE"] = bool(self.options.get_safe("sse", False))
+        if is_apple_os(self) and self.settings.get_safe("os.version"):
+            tc.cache_variables["CMAKE_OSX_DEPLOYMENT_TARGET"] = str(self.settings.os.version)
+        # By default astc-encoder's default AVX2 ISA is compiled as x86_64h Mach-O slice,
+        # which cannot be merged into the x86_64 libktx.a leaving the symbols undefined
+        # Force SSE4.1 so astcenc produces a plain x86_64 slice
+        if is_apple_os(self) and self.settings.arch == "x86_64":
+            tc.cache_variables["ASTCENC_ISA_AVX2"] = False
+            tc.cache_variables["ASTCENC_ISA_SSE41"] = True
         tc.generate()
+        deps = CMakeDeps(self)
+        deps.generate()
 
     def build(self):
-        files.apply_conandata_patches(self)
-        cm = cmake.CMake(self)
-        cm.configure()
-        cm.build()
-
-    def copy_sources_to_package(self, pattern, src, dst):
-        files.copy(self,
-                   pattern=pattern,
-                   src=os.path.join(self.source_folder, src),
-                   dst=os.path.join(self.package_folder, dst))
+        cmake = CMake(self)
+        cmake.configure()
+        cmake.build()
 
     def package(self):
-        cm = cmake.CMake(self)
-        cm.configure()
-        cm.install()
-        files.rmdir(self, os.path.join(self.package_folder, "lib", "cmake"))
-
-        self.copy_sources_to_package("astcenc.h", "lib/astc-encoder/Source/", "include")
-
-        # For some reason astcenc lib is not in output lib folder on Macos/iOS, copy manually
+        copy(self, "LICENSE.md", src=self.source_folder, dst=os.path.join(self.package_folder, "licenses"))
+        copy(self, "*", src=os.path.join(self.source_folder, "LICENSES"), dst=os.path.join(self.package_folder, "licenses"))
+        cmake = CMake(self)
+        cmake.install()
+        rmdir(self, os.path.join(self.package_folder, "lib", "cmake"))
+        copy(self, "astcenc.h",
+             src=os.path.join(self.source_folder, "lib", "astc-encoder", "Source"),
+             dst=os.path.join(self.package_folder, "include"))
         if self.settings.os in ["Macos", "iOS"]:
-            files.copy(self,
-                       pattern="*/*astcenc*.a",
-                       src=self.build_folder,
-                       dst=os.path.join(self.package_folder, "lib"),
-                       keep_path=False)
-
+            copy(self, "*astcenc*.a",
+                 src=self.build_folder,
+                 dst=os.path.join(self.package_folder, "lib"),
+                 keep_path=False)
         if self.settings.os == "iOS":
-            self.copy_sources_to_package("*", "include/KHR", "include/KHR")
-
-        self.copy_sources_to_package("LICENSE.md", "", "licenses")
-        self.copy_sources_to_package("*", "LICENSES", "licenses")
+            copy(self, "*",
+                 src=os.path.join(self.source_folder, "include", "KHR"),
+                 dst=os.path.join(self.package_folder, "include", "KHR"))
 
     def package_info(self):
-        self.cpp_info.set_property("cmake_file_name", "ktx")
-        self.cpp_info.set_property("cmake_target_name", "ktx::ktx")
-        self.cpp_info.components["libktx"].names["cmake_find_package"] = "ktx"
-        self.cpp_info.components["libktx"].names["cmake_find_package_multi"] = "ktx"
-
-        self.cpp_info.components["libktx"].libs = files.collect_libs(self)
-
+        self.cpp_info.set_property("cmake_file_name", "Ktx")
+        self.cpp_info.set_property("cmake_target_name", "KTX::ktx")
+        self.cpp_info.components["libktx"].libs = ["ktx"]
         self.cpp_info.components["libktx"].defines = [
             "KTX_FEATURE_KTX1", "KTX_FEATURE_KTX2", "KTX_FEATURE_WRITE"
         ]
         if not self.options.shared:
             self.cpp_info.components["libktx"].defines.append("KHRONOS_STATIC")
-            stdcpp_library = build.stdcpp_library(self)
-            if stdcpp_library:
-                self.cpp_info.components["libktx"].system_libs.append(stdcpp_library)
+            libcxx = stdcpp_library(self)
+            if libcxx:
+                self.cpp_info.components["libktx"].system_libs.append(libcxx)
         if self.settings.os == "Windows":
             self.cpp_info.components["libktx"].defines.append("BASISU_NO_ITERATOR_DEBUG_LEVEL")
         elif self.settings.os == "Linux":
             self.cpp_info.components["libktx"].system_libs.extend(["m", "dl", "pthread"])
 
+        self.cpp_info.components["libktx"].set_property("cmake_target_name", "KTX::ktx")
+        self.cpp_info.components["libktx"].requires = ["zstd::zstd"]
         if self.options.tools:
-            bin_path = os.path.join(self.package_folder, "bin")
-            self.output.info("Appending PATH environment variable: {}".format(bin_path))
-            self.env_info.PATH.append(bin_path)
+            self.cpp_info.components["libktx"].requires.append("fmt::fmt")
