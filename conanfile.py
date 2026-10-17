@@ -3,7 +3,7 @@ from conan.errors import ConanInvalidConfiguration
 from conan.tools.apple import is_apple_os
 from conan.tools.build import check_min_cppstd, stdcpp_library, cross_building, check_max_cppstd
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
-from conan.tools.files import apply_conandata_patches, copy, export_conandata_patches, get, rmdir, save, replace_in_file
+from conan.tools.files import apply_conandata_patches, collect_libs, copy, export_conandata_patches, get, rmdir, save, replace_in_file
 from conan.tools.scm import Version
 import os
 
@@ -12,7 +12,7 @@ required_conan_version = ">=2"
 
 class KtxConan(ConanFile):
     name = "ktx"
-    version = "4.4.2b"
+    version = "4.4.2c"
     description = "Khronos Texture library and tool"
     license = "Apache-2.0"
     topics = ("texture", "khronos")
@@ -121,7 +121,7 @@ class KtxConan(ConanFile):
         cmake.install()
         rmdir(self, os.path.join(self.package_folder, "lib", "cmake"))
         copy(self, "astcenc.h",
-             src=os.path.join(self.source_folder, "lib", "astc-encoder", "Source"),
+             src=os.path.join(self.source_folder, "external", "astc-encoder", "Source"),
              dst=os.path.join(self.package_folder, "include"))
         if self.settings.os in ["Macos", "iOS"]:
             copy(self, "*astcenc*.a",
@@ -136,7 +136,7 @@ class KtxConan(ConanFile):
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "Ktx")
         self.cpp_info.set_property("cmake_target_name", "KTX::ktx")
-        self.cpp_info.components["libktx"].libs = ["ktx"]
+        self.cpp_info.components["libktx"].libs = ["ktx"] + [lib for lib in collect_libs(self) if "astcenc" in lib]
         self.cpp_info.components["libktx"].defines = [
             "KTX_FEATURE_KTX1", "KTX_FEATURE_KTX2", "KTX_FEATURE_WRITE"
         ]
