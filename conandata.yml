@@ -1,10 +1,10 @@
 sources:
-  "4.4.2b":
+  "4.4.2c":
     url: "https://github.com/KhronosGroup/KTX-Software/archive/refs/tags/v4.4.2.tar.gz"
     sha256: "9412cb45045a503005acd47d98f9e8b47154634a50b4df21e17a1dfa8971d323"
 patches:
-  "4.4.2b":
-  - patch_file: "patches/4.4.2b/001-unvendor-dependencies.patch"
-  - patch_file: "patches/4.4.2b/002-no-ios-framework.patch"
+  "4.4.2c":
+  - patch_file: "patches/4.4.2c/001-unvendor-dependencies.patch"
+  - patch_file: "patches/4.4.2c/002-no-ios-framework.patch"
     patch_description: "Make regular library instead of framework on iOS"
     patch_type: "conan"
